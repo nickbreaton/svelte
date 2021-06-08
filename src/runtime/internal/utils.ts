@@ -176,34 +176,28 @@ export function create_writable_store(value: unknown) {
 
 export function aggregate_component_actions(actions) {
 	return (element) => {
-		const destroy_queue = [];
-
-		actions.forEach(([action, options]) => {
+		const unsubscribers = actions.map(([action, options]) => {
 			let update = noop as Function;
-			let first = true;
+			let ran = false;
 
-			const unsub = options.subscribe((current) => {
-				if (first) {
-					first = false;
+			return options.subscribe((current) => {
+				if (ran) {
+					update(current);
+				} else {
+					ran = true;
 					const result = action(element, current);
 					if (result && result.update) {
 						update = result.update;
 					}
-					if (result && result.destroy) {
-						destroy_queue.push(result.destroy);
-						// TODO: return this isntead of pushing to destroy queue (should do same thing)
-					}
-				} else {
-					update(current);
+					return action_destroyer(result);
 				}
 			});
-
-			destroy_queue.push(unsub);
 		});
 
 		return {
 			destroy() {
-				// destroy_queue.forEach(destroy => destroy());
+				// TODO: figure out why destroy throws error (not specifically from this logic)
+				unsubscribers.forEach(destroy => destroy());
 			}
 		};
 	};
