@@ -412,18 +412,13 @@ export default function dom(
 			}) as Expression)
 		};
 
-		const element = x`element`;
-		const actions = x`
-			function $$actions(${element}) {
-				${b`console.log(${element});`}
-			}
+		const actions = b`
+			const { $$actions } = $$props;
 		`;
 
 		body.push(b`
 			function ${definition}(${args}) {
 				${injected.map(name => b`let ${name};`)}
-
-				${actions}
 
 				${rest}
 
@@ -432,6 +427,8 @@ export default function dom(
 				${reactive_store_subscriptions}
 
 				${resubscribable_reactive_store_unsubscribers}
+
+				${actions}
 
 				${component.slots.size || component.compile_options.dev || uses_slots ? b`let { $$slots: #slots = {}, $$scope } = $$props;` : null}
 				${component.compile_options.dev && b`@validate_slots('${component.tag}', #slots, [${[...component.slots.keys()].map(key => `'${key}'`).join(',')}]);`}

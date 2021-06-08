@@ -190,7 +190,8 @@ export default class InlineComponentWrapper extends Wrapper {
 				});
 			}
 
-			initial_props.push(p`actions: @aggregate_component_actions(${actionsId})`);
+			// TODO: does this really need to be part of props, seems like it should never change
+			initial_props.push(p`$$actions: @aggregate_component_actions(${actionsId})`);
 
 			const attribute_object = uses_spread
 			? x`{ ${initial_props} }`
