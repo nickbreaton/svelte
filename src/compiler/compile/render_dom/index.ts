@@ -412,9 +412,18 @@ export default function dom(
 			}) as Expression)
 		};
 
+		const element = x`element`;
+		const actions = x`
+			function $$actions(${element}) {
+				${b`console.log(${element});`}
+			}
+		`;
+
 		body.push(b`
 			function ${definition}(${args}) {
 				${injected.map(name => b`let ${name};`)}
+
+				${actions}
 
 				${rest}
 

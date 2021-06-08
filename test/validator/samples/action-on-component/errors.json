@@ -1,6 +1,6 @@
 [{
 	"code": "invalid-action",
-	"message": "Actions can only be applied to DOM elements, not components",
+	"message": "Actions can only be applied to DOM elements, not components 2",
 	"pos": 86,
 	"start": {
 		"line": 7,

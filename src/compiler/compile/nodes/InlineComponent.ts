@@ -9,6 +9,7 @@ import Let from './Let';
 import TemplateScope from './shared/TemplateScope';
 import { INode } from './interfaces';
 import { TemplateNode } from '../../interfaces';
+import Action from './Action';
 
 export default class InlineComponent extends Node {
 	type: 'InlineComponent';
@@ -21,6 +22,7 @@ export default class InlineComponent extends Node {
 	css_custom_properties: Attribute[] = [];
 	children: INode[];
 	scope: TemplateScope;
+	actions: Action[] = [];
 
 	constructor(component: Component, parent: Node, scope: TemplateScope, info: TemplateNode) {
 		super(component, parent, scope, info);
@@ -37,14 +39,18 @@ export default class InlineComponent extends Node {
 			? new Expression(component, this, scope, info.expression)
 			: null;
 
-		info.attributes.forEach(node => {
+			info.attributes.forEach(node => {
+			// console.log(this, scope)
 			/* eslint-disable no-fallthrough */
 			switch (node.type) {
 				case 'Action':
-					component.error(node, {
-						code: 'invalid-action',
-						message: 'Actions can only be applied to DOM elements, not components'
-					});
+					this.actions.push(new Action(component, this, scope, node));
+					break;
+
+					// component.error(node, {
+					// 	code: 'invalid-action',
+					// 	message: 'Actions can only be applied to DOM elements, not components 1'
+					// });
 
 				case 'Attribute':
 					if (node.name.startsWith('--')) {
@@ -137,17 +143,17 @@ export default class InlineComponent extends Node {
 						slot_template.attributes.push(attribute);
 					}
 				}
-		
+
 				children.push(slot_template);
 				info.children.splice(i, 1);
 			}
 		}
 
 		if (info.children.some(node => not_whitespace_text(node))) {
-			children.push({ 
+			children.push({
 				start: info.start,
 				end: info.end,
-				type: 'SlotTemplate', 
+				type: 'SlotTemplate',
 				name: 'svelte:fragment',
 				attributes: [],
 				children: info.children

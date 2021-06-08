@@ -170,7 +170,29 @@ export default class InlineComponentWrapper extends Wrapper {
 			]
 			: [];
 
-		const attribute_object = uses_spread
+			const actionsId = component.get_unique_name('component_actions');
+			const actionsNode = x`[]`;
+
+			block.add_variable(actionsId, actionsNode);
+
+			if (actionsNode.type === 'ArrayExpression') {
+				this.node.actions.forEach((action, index) => {
+					action.expression?.manipulate(block);
+
+					actionsNode.elements.push(
+						x`[${action.name}, @create_writable_store(${action.expression && action.expression.node})]`
+					);
+
+					if (action.expression?.dependencies) {
+						const condition = renderer.dirty(Array.from(action.expression.dependencies));
+						updates.push(x`${condition} ? ${actionsId.name}[${index}][1].set(${action.expression.node}) : null`);
+					}
+				});
+			}
+
+			initial_props.push(p`actions: @aggregate_component_actions(${actionsId})`);
+
+			const attribute_object = uses_spread
 			? x`{ ${initial_props} }`
 			: x`{
 				${this.node.attributes.map(attr => p`${attr.name}: ${attr.get_value(block)}`)},

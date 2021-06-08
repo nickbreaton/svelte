@@ -1,4 +1,4 @@
-import { Readable } from 'svelte/store';
+import { Readable, writable } from 'svelte/store';
 
 export function noop() {}
 
@@ -168,4 +168,43 @@ export const has_prop = (obj, prop) => Object.prototype.hasOwnProperty.call(obj,
 
 export function action_destroyer(action_result) {
 	return action_result && is_function(action_result.destroy) ? action_result.destroy : noop;
+}
+
+export function create_writable_store(value: unknown) {
+	return writable(value);
+}
+
+export function aggregate_component_actions(actions) {
+	return (element) => {
+		const destroy_queue = [];
+
+		actions.forEach(([action, options]) => {
+			let update = noop as Function;
+			let first = true;
+
+			const unsub = options.subscribe((current) => {
+				if (first) {
+					first = false;
+					const result = action(element, current);
+					if (result && result.update) {
+						update = result.update;
+					}
+					if (result && result.destroy) {
+						destroy_queue.push(result.destroy);
+						// TODO: return this isntead of pushing to destroy queue (should do same thing)
+					}
+				} else {
+					update(current);
+				}
+			});
+
+			destroy_queue.push(unsub);
+		});
+
+		return {
+			destroy() {
+				// destroy_queue.forEach(destroy => destroy());
+			}
+		};
+	};
 }
