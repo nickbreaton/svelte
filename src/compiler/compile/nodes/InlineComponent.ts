@@ -40,17 +40,12 @@ export default class InlineComponent extends Node {
 			: null;
 
 			info.attributes.forEach(node => {
-			// console.log(this, scope)
+
 			/* eslint-disable no-fallthrough */
 			switch (node.type) {
 				case 'Action':
 					this.actions.push(new Action(component, this, scope, node));
 					break;
-
-					// component.error(node, {
-					// 	code: 'invalid-action',
-					// 	message: 'Actions can only be applied to DOM elements, not components 1'
-					// });
 
 				case 'Attribute':
 					if (node.name.startsWith('--')) {
