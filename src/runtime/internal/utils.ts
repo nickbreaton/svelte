@@ -175,7 +175,7 @@ export function create_writable_store(value: unknown) {
 }
 
 export function aggregate_component_actions(actions) {
-	return (element) => {
+	return function $$actions(element) {
 		const unsubscribers = actions.map(([action, options]) => {
 			let update = noop as Function;
 			let ran = false;
